@@ -3,6 +3,7 @@ const questions = [
     q: "What is the capital of India?",
     a: "New Delhi",
     opt: ["Jaipur", "Mumbai", "New Delhi", "Kolkata"],
+    img: "/Image/question-mark.webp",
   },
   {
     q: "Which is the national bird of India?",
@@ -29,6 +30,9 @@ const quizDiv = document.querySelector("#quiz");
 const scoreDiv = document.querySelector("#score");
 const paragraphs = document.querySelectorAll(".option");
 const optDiv = document.querySelector(".options");
+const startButton = document.getElementById("startButton");
+const nameInput = document.getElementById("nameInput");
+const firstScreen = document.querySelector(".first_screen");
 
 let timer = 5;
 let count = 0;
@@ -38,46 +42,56 @@ let isQuestionAnswered = false;
 
 timerDiv.innerHTML = timer;
 
-// Print the first question instantly on page load
-printQuestion();
-
-id2 = setInterval(() => {
-  if (timer === 1) {
-    timer = 5;
-    timerDiv.innerHTML = timer;
-  } else timerDiv.innerHTML = --timer;
-}, 1000);
-
-id1 = setInterval(() => {
-  if (count === questions.length - 1) {
-    checkUserAnswer();
-    // clear the question
-    clearInterval(id1);
-    // clear the timer
-    clearInterval(id2);
-    quizDiv.classList.add("hidden");
-    optDiv.classList.add("hidden");
-    scoreDiv.classList.remove("hidden");
-    calculateScore();
+startButton.addEventListener("click", () => {
+  if (nameInput.value !== "") {
+    firstScreen.style.display = "none";
+    quizDiv.style.display = "block";
+    startQuiz();
   } else {
-    // incerment the question number
-    count++;
-    //to check all questions except the last one
-    checkUserAnswer();
-    //Enable all options again
-    enableAllOptions();
-    // Question change
-    printQuestion();
+    alert("Please enter your name");
   }
-}, 5000);
+});
+
+function startQuiz() {
+  printQuestion();
+  id2 = setInterval(() => {
+    if (timer === 1) {
+      timer = 5;
+      timerDiv.innerHTML = timer;
+    } else timerDiv.innerHTML = --timer;
+  }, 1000);
+
+  id1 = setInterval(() => {
+    if (count === questions.length - 1) {
+      checkUserAnswer();
+      clearInterval(id1);
+      clearInterval(id2);
+      quizDiv.classList.add("hidden");
+      scoreDiv.classList.remove("hidden");
+      calculateScore();
+    } else {
+      count++;
+      checkUserAnswer();
+      enableAllOptions();
+      printQuestion();
+    }
+  }, 5000);
+}
 
 function printQuestion() {
-  // questionDiv.innerHTML = questions[count].q;
-  // questionDiv.innerHTML = `Q${count + 1}. ${questions[count].q}`;
-  questionDiv.innerHTML = `Q${count + 1}. ${questions[randomOrder[count]].q}`;
+  const currentQuestion = questions[randomOrder[count]];
+  questionDiv.innerHTML = `Q${count + 1}. ${currentQuestion.q}`;
+
+  if (currentQuestion.img) {
+    const img = document.createElement("img");
+    img.src = currentQuestion.img;
+    img.alt = "Question Image";
+    img.style.maxWidth = "100%";
+    questionDiv.appendChild(img);
+  }
+
   paragraphs.forEach((para, index) => {
-    // para.innerHTML = questions[count].opt[index];
-    para.innerHTML = questions[randomOrder[count]].opt[index];
+    para.innerHTML = currentQuestion.opt[index];
   });
 }
 
@@ -104,10 +118,10 @@ function checkUserAnswer() {
 function getARandomOrder() {
   let temp = [];
   for (let i = 0; i < questions.length; i++) {
-    const randomvalue = Math.floor(Math.random() * questions.length);
-    if (temp.includes(randomvalue)) return getARandomOrder();
+    const randomValue = Math.floor(Math.random() * questions.length);
+    if (temp.includes(randomValue)) return getARandomOrder();
     else {
-      temp.push(randomvalue);
+      temp.push(randomValue);
     }
   }
   return temp;
@@ -128,8 +142,7 @@ function enableAllOptions() {
 function calculateScore() {
   let score = 0;
   userAnswers.forEach((answer, index) => {
-    // if (answer === questions[index].a)
     if (answer === questions[randomOrder[index]].a) score++;
   });
-  scoreDiv.innerHTML = `Your score is: ${score} out of ${questions.length}`;
+  scoreDiv.innerHTML = `${nameInput.value} <br> <br> Your score is : ${score} out of ${questions.length}`;
 }
